@@ -4,6 +4,7 @@ resource "aws_s3_bucket" "nas_backups" {
 
 resource "aws_s3_bucket_versioning" "nas_versioning" {
   bucket = aws_s3_bucket.nas_backups.id
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -28,7 +29,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "nas_lifecycle" {
     noncurrent_version_expiration {
       noncurrent_days = var.retention_days
     }
-    
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }

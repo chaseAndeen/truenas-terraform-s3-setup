@@ -11,8 +11,8 @@ terraform {
 
 provider "aws" {
   region  = var.aws_region
-  profile = "sysop"
-  
+  profile = "InfraProvisioner"
+
   default_tags {
     tags = {
       Project   = "NAS-Disaster-Recovery"
