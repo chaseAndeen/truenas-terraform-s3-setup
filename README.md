@@ -40,18 +40,6 @@ terraform output -raw secret_access_key
 
 ---
 
-## Variables
-
-| Name | Description | Default |
-|---|---|---|
-| `aws_region` | AWS region | `us-east-1` |
-| `bucket_name` | Globally unique S3 bucket name | `kernelstack-infra-backups` |
-| `iam_user_name` | IAM user name for TrueNAS | `truenas-s3-sync-user` |
-| `archive_days` | Days before transitioning to Deep Archive | `1` |
-| `retention_days` | Days to retain noncurrent versions | `180` |
-
----
-
 ## Outputs
 
 | Name | Description |
@@ -73,3 +61,19 @@ In TrueNAS SCALE, create a cloud sync task using the IAM credentials output by t
 - **Secret Access Key:** `terraform output -raw secret_access_key`
 - **Bucket:** value of `bucket_name`
 - **Region:** value of `aws_region`
+
+---
+
+## State management
+
+Terraform state is stored remotely in S3 with DynamoDB locking:
+
+| Resource | Name |
+|---|---|
+| S3 bucket | `kernelstack-terraform-state` |
+| State key | `pbs/terraform.tfstate` |
+| DynamoDB table | `kernelstack-terraform-locks` |
+
+Managed by `terraform-bootstrap`. The `InfraProvisioner` profile requires
+S3 read/write and DynamoDB lock permissions — see `terraform-bootstrap` README
+for the required IAM policy.
