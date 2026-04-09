@@ -22,8 +22,8 @@ variable "archive_days" {
   default     = 1
 }
 
-variable "retention_days" {
-  description = "Days to retain noncurrent object versions before deletion"
-  type        = number
-  default     = 180
+variable "iam_admin_profile" {
+  description = "AWS profile with IAM write permissions for creating the TrueNAS sync user and access key. InfraProvisioner lacks iam:* so a separate admin profile is required."
+  type        = string
+  default     = "AdministratorAccess"
 }

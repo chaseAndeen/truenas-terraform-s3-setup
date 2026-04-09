@@ -2,13 +2,12 @@ resource "aws_s3_bucket" "nas_backups" {
   bucket = var.bucket_name
 }
 
-resource "aws_s3_bucket_versioning" "nas_versioning" {
-  bucket = aws_s3_bucket.nas_backups.id
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+# No versioning resource — versioning is never enabled on this bucket.
+# TrueNAS uses transfer_mode=SYNC so S3 always mirrors local state.
+# TrueNAS local ZFS snapshots (every 6h, 2-week retention) provide version
+# history locally. S3 versioning + DEEP_ARCHIVE would add a 180-day minimum
+# storage charge on every noncurrent object, which is expensive for backup
+# datasets that churn regularly.
 
 resource "aws_s3_bucket_lifecycle_configuration" "nas_lifecycle" {
   bucket = aws_s3_bucket.nas_backups.id
@@ -24,10 +23,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "nas_lifecycle" {
     transition {
       days          = var.archive_days
       storage_class = "DEEP_ARCHIVE"
-    }
-
-    noncurrent_version_expiration {
-      noncurrent_days = var.retention_days
     }
 
     abort_incomplete_multipart_upload {

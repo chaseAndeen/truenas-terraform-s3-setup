@@ -1,0 +1,217 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.7",
+  "serial": 5,
+  "lineage": "828ef806-b8fb-00f6-8131-9a3c112a298b",
+  "outputs": {
+    "access_key_id": {
+      "value": null,
+      "type": "string"
+    },
+    "bucket_arn": {
+      "value": "arn:aws:s3:::kernelstack-infra-backups",
+      "type": "string"
+    },
+    "bucket_domain_name": {
+      "value": "kernelstack-infra-backups.s3.amazonaws.com",
+      "type": "string"
+    },
+    "bucket_name": {
+      "value": "kernelstack-infra-backups",
+      "type": "string"
+    },
+    "secret_access_key": {
+      "value": null,
+      "type": "string",
+      "sensitive": true
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "nas_backups",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "acceleration_status": "",
+            "acl": null,
+            "arn": "arn:aws:s3:::kernelstack-infra-backups",
+            "bucket": "kernelstack-infra-backups",
+            "bucket_domain_name": "kernelstack-infra-backups.s3.amazonaws.com",
+            "bucket_prefix": "",
+            "bucket_regional_domain_name": "kernelstack-infra-backups.s3.us-east-1.amazonaws.com",
+            "cors_rule": [],
+            "force_destroy": null,
+            "grant": [
+              {
+                "id": "18163c7141a5aeaf9c9956c6b16ec6d271d6fb0e1b8661c16521e6bf879e06c2",
+                "permissions": [
+                  "FULL_CONTROL"
+                ],
+                "type": "CanonicalUser",
+                "uri": ""
+              }
+            ],
+            "hosted_zone_id": "Z3AQBSTGFYJSTF",
+            "id": "kernelstack-infra-backups",
+            "lifecycle_rule": [
+              {
+                "abort_incomplete_multipart_upload_days": 7,
+                "enabled": true,
+                "expiration": [],
+                "id": "archive-to-deep-archive",
+                "noncurrent_version_expiration": [
+                  {
+                    "days": 180
+                  }
+                ],
+                "noncurrent_version_transition": [],
+                "prefix": "",
+                "tags": {},
+                "transition": [
+                  {
+                    "date": "",
+                    "days": 1,
+                    "storage_class": "DEEP_ARCHIVE"
+                  }
+                ]
+              }
+            ],
+            "logging": [],
+            "object_lock_configuration": [],
+            "object_lock_enabled": false,
+            "policy": "",
+            "region": "us-east-1",
+            "replication_configuration": [],
+            "request_payer": "BucketOwner",
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "kms_master_key_id": "",
+                        "sse_algorithm": "AES256"
+                      }
+                    ],
+                    "bucket_key_enabled": false
+                  }
+                ]
+              }
+            ],
+            "tags": {},
+            "tags_all": {
+              "ManagedBy": "Terraform",
+              "Project": "NAS-Disaster-Recovery"
+            },
+            "timeouts": null,
+            "versioning": [
+              {
+                "enabled": true,
+                "mfa_delete": false
+              }
+            ],
+            "website": [],
+            "website_domain": null,
+            "website_endpoint": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInJlYWQiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMCJ9"
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_s3_bucket_lifecycle_configuration",
+      "name": "nas_lifecycle",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "bucket": "kernelstack-infra-backups",
+            "expected_bucket_owner": "",
+            "id": "kernelstack-infra-backups",
+            "rule": [
+              {
+                "abort_incomplete_multipart_upload": [
+                  {
+                    "days_after_initiation": 7
+                  }
+                ],
+                "expiration": [],
+                "filter": [
+                  {
+                    "and": [],
+                    "object_size_greater_than": null,
+                    "object_size_less_than": null,
+                    "prefix": "",
+                    "tag": []
+                  }
+                ],
+                "id": "archive-to-deep-archive",
+                "noncurrent_version_expiration": [
+                  {
+                    "newer_noncurrent_versions": null,
+                    "noncurrent_days": 180
+                  }
+                ],
+                "noncurrent_version_transition": [],
+                "prefix": "",
+                "status": "Enabled",
+                "transition": [
+                  {
+                    "date": null,
+                    "days": 1,
+                    "storage_class": "DEEP_ARCHIVE"
+                  }
+                ]
+              }
+            ],
+            "timeouts": null,
+            "transition_default_minimum_object_size": "all_storage_classes_128K"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "aws_s3_bucket.nas_backups"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_s3_bucket_versioning",
+      "name": "nas_versioning",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "kernelstack-infra-backups",
+            "expected_bucket_owner": "",
+            "id": "kernelstack-infra-backups",
+            "mfa": null,
+            "versioning_configuration": [
+              {
+                "mfa_delete": "",
+                "status": "Suspended"
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_s3_bucket.nas_backups"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

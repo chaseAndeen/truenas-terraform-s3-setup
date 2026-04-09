@@ -1,14 +1,16 @@
 # truenas-terraform-s3-setup
 
-Terraform module for provisioning an S3 bucket and least-privilege IAM user for TrueNAS SCALE cloud sync tasks. Objects transition to S3 Glacier Deep Archive after a configurable number of days, with noncurrent version expiration for cost control.
+Terraform module for provisioning an S3 bucket and least-privilege IAM user for TrueNAS SCALE cloud sync tasks. Objects transition to S3 Glacier Deep Archive after a configurable number of days for cost-effective disaster recovery storage.
+
+Versioning is intentionally not enabled. TrueNAS uses `transfer_mode=SYNC` so S3 always mirrors local state. Local ZFS snapshots provide version history on the NAS itself — enabling S3 versioning with DEEP_ARCHIVE would add a 180-day minimum storage charge on every noncurrent object for no practical benefit.
 
 ---
 
 ## Resources
 
-- S3 bucket with versioning enabled
-- Lifecycle rule — transitions to Deep Archive, expires noncurrent versions, aborts incomplete multipart uploads after 7 days
-- IAM user with scoped S3 policy (put, get, delete, list)
+- S3 bucket (no versioning)
+- Lifecycle rule — transitions to DEEP_ARCHIVE after `archive_days`, aborts incomplete multipart uploads after 7 days
+- IAM user with least-privilege S3 policy (put, get, delete, list)
 - IAM access key for TrueNAS cloud sync credentials
 
 ---
@@ -16,8 +18,14 @@ Terraform module for provisioning an S3 bucket and least-privilege IAM user for 
 ## Prerequisites
 
 - Terraform >= 1.5.0
-- AWS CLI configured with the `InfraProvisioner` SSO profile
-- `aws sso login --profile InfraProvisioner`
+- Two AWS CLI profiles:
+  - **`InfraProvisioner`** — used for S3 resources. Requires `s3:*` on the target bucket.
+  - **`AdministratorAccess`** (or equivalent) — used for IAM resources. Requires `iam:CreateUser`, `iam:CreateAccessKey`, `iam:PutUserPolicy`. Set via `var.iam_admin_profile`.
+
+```bash
+aws sso login --profile InfraProvisioner
+aws sso login --profile AdministratorAccess
+```
 
 ---
 
@@ -25,7 +33,7 @@ Terraform module for provisioning an S3 bucket and least-privilege IAM user for 
 
 ```bash
 cp variables.tf.example variables.tf
-# Edit variables.tf with your values
+# Edit variables.tf with your bucket name and profile names
 
 terraform init
 terraform plan
@@ -37,6 +45,18 @@ Retrieve the secret key after apply:
 ```bash
 terraform output -raw secret_access_key
 ```
+
+---
+
+## Variables
+
+| Name | Description | Default |
+|---|---|---|
+| `aws_region` | AWS region | `us-east-1` |
+| `bucket_name` | Globally unique S3 bucket name | `my-nas-backups` |
+| `iam_user_name` | IAM user name for TrueNAS | `truenas-s3-sync-user` |
+| `archive_days` | Days before transitioning to DEEP_ARCHIVE | `1` |
+| `iam_admin_profile` | AWS profile with IAM write permissions | `AdministratorAccess` |
 
 ---
 
@@ -61,19 +81,11 @@ In TrueNAS SCALE, create a cloud sync task using the IAM credentials output by t
 - **Secret Access Key:** `terraform output -raw secret_access_key`
 - **Bucket:** value of `bucket_name`
 - **Region:** value of `aws_region`
+- **Transfer mode:** Sync
+- **Storage class:** DEEP_ARCHIVE
 
 ---
 
 ## State management
 
-Terraform state is stored remotely in S3 with DynamoDB locking:
-
-| Resource | Name |
-|---|---|
-| S3 bucket | `kernelstack-terraform-state` |
-| State key | `pbs/terraform.tfstate` |
-| DynamoDB table | `kernelstack-terraform-locks` |
-
-Managed by `terraform-bootstrap`. The `InfraProvisioner` profile requires
-S3 read/write and DynamoDB lock permissions — see `terraform-bootstrap` README
-for the required IAM policy.
+Terraform state is stored locally. The `variables.tf` file is gitignored — use `variables.tf.example` as the template and never commit real values.

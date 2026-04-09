@@ -9,9 +9,28 @@ terraform {
   }
 }
 
+# Default provider — used for S3 resources.
+# InfraProvisioner has s3:* but no IAM permissions.
 provider "aws" {
   region  = var.aws_region
   profile = "InfraProvisioner"
+
+  default_tags {
+    tags = {
+      Project   = "NAS-Disaster-Recovery"
+      ManagedBy = "Terraform"
+    }
+  }
+}
+
+# IAM provider — used for the TrueNAS sync user and access key.
+# A separate profile is required because InfraProvisioner lacks iam:* permissions.
+# Set var.iam_admin_profile to an AWS profile with IAM write access
+# (e.g. AdministratorAccess or a role with iam:CreateUser, iam:CreateAccessKey).
+provider "aws" {
+  alias   = "iam_admin"
+  region  = var.aws_region
+  profile = var.iam_admin_profile
 
   default_tags {
     tags = {
