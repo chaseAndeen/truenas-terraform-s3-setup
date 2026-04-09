@@ -1,3 +1,9 @@
+variable "aws_profile" {
+  description = "AWS CLI profile for S3 resource provisioning"
+  type        = string
+  default     = "InfraProvisioner"
+}
+
 variable "aws_region" {
   description = "AWS region to deploy resources in"
   type        = string
