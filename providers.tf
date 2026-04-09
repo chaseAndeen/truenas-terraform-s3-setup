@@ -10,10 +10,10 @@ terraform {
 }
 
 # Default provider — used for S3 resources.
-# InfraProvisioner has s3:* but no IAM permissions.
+# The default profile needs s3:* but no IAM permissions.
 provider "aws" {
   region  = var.aws_region
-  profile = "InfraProvisioner"
+  profile = var.aws_profile
 
   default_tags {
     tags = {
